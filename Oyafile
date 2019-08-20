@@ -1,0 +1,9 @@
+# -*- mode: yaml -*-
+
+Project: example
+
+onPush: |
+  echo "Building feature branch"
+
+onMerge: |
+  echo "Building master"

@@ -1,0 +1,84 @@
+defaults: &defaults
+  working_directory: ~/oya-project
+  docker:
+    - image: google/cloud-sdk
+      environment:
+        OYA_VER: "oya version v0.0.15"
+
+version: 2
+jobs:
+  oya_dependencies:
+    <<: *defaults
+    steps:
+      - run: echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
+      - run: apt-get update && apt-get install -y wget curl
+      - run: mkdir -p ~/.oya/bin
+      - run: cd ~/.oya/ && wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
+      - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
+      - run: curl https://oya.sh/get | bash
+      - run: mv /usr/local/bin/oya ~/.oya/bin
+      - save_cache:
+          key: oya-cache-v2-{{ arch }}-{{ .Branch }}
+          paths:
+            - ~/.oya
+      - checkout
+      - run: echo -e "$PGP_KEY" | gpg --import
+      - attach_workspace:
+          at: ~/oya-project
+      - run: oya run onPush
+
+  onPush:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          keys:
+            - oya-cache-v2-{{ arch }}-{{ .Branch }}
+            - oya-cache-v2
+      - run: |
+          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
+          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
+      - run: echo -e "$PGP_KEY" | gpg --import
+      - checkout
+      - attach_workspace:
+          at: ~/oya-project
+      - run: oya run onPush
+
+  onMerge:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          keys:
+            - oya-cache-v2-{{ arch }}-{{ .Branch }}
+            - oya-cache-v2
+      - run: |
+          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
+          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
+      - run: echo -e "$PGP_KEY" | gpg --import
+      - run: curl -sL https://deb.nodesource.com/setup_4.x | bash
+      - run: apt-get install nodejs
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/oya-project
+      - run: oya run onMerge
+
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      - oya_dependencies
+      - onPush:
+          requires:
+            - oya_dependencies
+          filters:
+            branches:
+              ignore:
+                - master
+
+      - onMerge:
+          requires:
+            - oya_dependencies
+          filters:
+            branches:
+              only:
+                - master

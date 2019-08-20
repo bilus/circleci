@@ -2,7 +2,14 @@
 
 Project: example
 
+Changeset:
+  git diff --dirstat | awk '{a="+"$2; print a}'
+
 onPush: |
+  echo compare url = $CIRCLE_COMPARE_URL
+  git branch -f master origin/master
+  git diff master..HEAD
+
   echo "Building feature branch"
 
 onMerge: |

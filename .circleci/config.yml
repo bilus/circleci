@@ -11,7 +11,7 @@ jobs:
     <<: *defaults
     steps:
       - run: echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
-      - run: apt-get update && apt-get install -y wget curl ca-certificates
+      - run: apt-get update && apt-get install -y wget curl
       - run: mkdir -p ~/.oya/bin
       - run: cd ~/.oya/ && wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
       - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
@@ -22,7 +22,13 @@ jobs:
           paths:
             - ~/.oya
       - checkout
-      - run: echo -e "$PGP_KEY" | gpg --import
+      - run: |
+          if [ -z "$PGP_KEY" ]
+          then
+            echo "Set PGP_KEY variable in the project's CircleCI configuration"
+            exit 1
+          fi
+          echo -e "$PGP_KEY" | gpg --import
       - attach_workspace:
           at: ~/oya-project
       - run: oya run onPush

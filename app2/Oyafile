@@ -1,4 +1,4 @@
 # -*- mode: yaml -*-
 
 onPush: |
-  echo "Pushed app1 to branch"
+  echo "Pushed app2 to branch"

@@ -17,56 +17,60 @@ jobs:
       - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
       - run: curl https://oya.sh/get | bash
       - run: mv /usr/local/bin/oya ~/.oya/bin
-      - save_cache:
-          key: oya-cache-v2-{{ arch }}-{{ .Branch }}
-          paths:
-            - ~/.oya
-      - checkout
+      - run: |
+          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
+          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
       - run: |
           if [ -z "$PGP_KEY" ]
           then
             echo "Set PGP_KEY variable in the project's CircleCI configuration"
             exit 1
           fi
-          echo -e "$PGP_KEY" | gpg --import
-      - attach_workspace:
-          at: ~/oya-project
-      - run: oya run onPush
+      - save_cache:
+          key: oya-cache-v2-{{ arch }}-{{ .Branch }}
+          paths:
+            - ~/.oya
+      - checkout
+      # TODO: Make master configurable.
+      - save_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/oya-project
 
   onPush:
     <<: *defaults
     steps:
+      - restore_cache: # Restores the workdir.
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           keys:
             - oya-cache-v2-{{ arch }}-{{ .Branch }}
-            - oya-cache-v2
+            # - oya-cache-v2
       - run: |
-          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-      - run: echo -e "$PGP_KEY" | gpg --import
-      - checkout
-      - attach_workspace:
-          at: ~/oya-project
-      - run: oya run onPush
+          echo -e "$PGP_KEY" | gpg --import
+          echo "---"
+          git diff-tree master..HEAD
+          echo "Running onPush"
+          ~/.oya/bin/oya run Changeset
+          echo "---"
+          ~/.oya/bin/oya run -r -c onPush
 
   onMerge:
     <<: *defaults
     steps:
+      - restore_cache: # Restores the workdir.
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           keys:
             - oya-cache-v2-{{ arch }}-{{ .Branch }}
             - oya-cache-v2
+      # - checkout
+      # - setup_remote_docker
+      # - attach_workspace:
+      #     at: ~/oya-project
       - run: |
-          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-      - run: echo -e "$PGP_KEY" | gpg --import
-      - run: curl -sL https://deb.nodesource.com/setup_4.x | bash
-      - run: apt-get install nodejs
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/oya-project
-      - run: oya run onMerge
+          echo -e "$PGP_KEY" | gpg --import
+          ~/.oya/bin/oya run -r -c onMerge
 
 workflows:
   version: 2

@@ -33,3 +33,12 @@ onMerge: |
 cat -e xyz | sed 's/\$/\\n/g' | pbcopy
 
 Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
+
+
+
+# Problems to solve
+- Push changeset
+- Merge changeset
+- Auto-create circleci project incl. pgp
+- Choose docker image (?)
+- Install prerequisites (e.g. node.js)

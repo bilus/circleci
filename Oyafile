@@ -25,4 +25,5 @@ onMerge: |
   printenv
 
 
-# onMergeSuccess: |
+onMergeSuccess: |
+  curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/gh/bilus/circleci/envvar?circle-token=70607f0e9196210054ac7462a94b39ba682623c6"

@@ -69,8 +69,10 @@ jobs:
       # - attach_workspace:
       #     at: ~/oya-project
       - run: |
+          set -e
           echo -e "$PGP_KEY" | gpg --import
           ~/.oya/bin/oya run -r -c onMerge
+          ~/.oya/bin/oya run -r -c onMergeSuccess
 
 workflows:
   version: 2

@@ -71,7 +71,9 @@ jobs:
       - run: |
           set -e
           echo -e "$PGP_KEY" | gpg --import
+          echo "Modified directories:"
           ~/.oya/bin/oya run -r -c Changeset ## Debugging
+          echo "Running onMerge targets"
           ~/.oya/bin/oya run -r -c onMerge
           ~/.oya/bin/oya run -r -c onMergeSuccess
 

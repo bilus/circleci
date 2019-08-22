@@ -30,7 +30,6 @@ onPush: |
 
 onMerge: |
   echo "Building master"
-  printenv
 
 
 onMergeSuccess: |

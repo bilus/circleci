@@ -11,7 +11,7 @@ Changeset: |
   else
     last_sha_var="OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}"
     last_sha="${!last_sha_var}"
-    if [ -z "${lash_sha}" ]; then
+    if [ -z "${last_sha}" ]; then
       empty_tree=4b825dc642cb6eb9a060e54bf8d69288fbee4904
       compare_to=${empty_tree}
     else
@@ -35,6 +35,3 @@ onMerge: |
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
   curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/gh/bilus/circleci/envvar?circle-token=70607f0e9196210054ac7462a94b39ba682623c6"
-
-
-# TODO: Somehow it things app1 and app2 are a part of generated changeset!

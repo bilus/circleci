@@ -44,25 +44,31 @@ onMergeSuccess: |
   curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
 
 
+init.Doc: >-
+  Initialize CircleCI for the project.
 init: |
   set -e
 
-  # Requires personal API token to be passed as the first argument.
-  api_token=$1
-  if [ -z "${api_token}" ]; then
-    oya run initUsage
-    exit 1
-  fi
+  # Requires repo url as the argument.
 
-  # Requires a repo url as the second argument.
-  # Example: https://github.com/tooploox/oya or github.com/tooploox/oya
-  vcs_url=$2
+  vcs_url=$1
   if [ -z "${vcs_url}" ]; then
     oya run initUsage
     exit 1
   fi
 
+  # Requires personal API token.
+
+  api_token=${Oya[Flags.token]:-${CIRCLECI_TOKEN}}
+  if [ -z "${api_token}" ]; then
+    oya run initUsage
+    exit 1
+  fi
+
   # Follow the repo.
+
+  echo "Asking CircleCI to follow ${vcs_url}"
+
   if [[ $vcs_url =~ "github.com" ]]; then
     vcs_type=gh
   elif [[ $vcs_url =~ "bitbucket.org" ]]; then
@@ -73,44 +79,74 @@ init: |
     exit 2
   fi
 
-  echo "Asking CircleCI to follow ${vcs_url}"
   project=`basename "${vcs_url}"`
   username=`basename "$(dirname \"${vcs_url}\")"`
   curl -X POST https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/follow?circle-token=${api_token}
 
   # Generate and upload a PGP key for encrypting Oya secrets.
 
-  echo "Generating PGP key and .sops.yml"
+  echo "Generating PGP key and .sops.yaml"
   private_key=$(oya secrets init --type pgp --name "CircleCI" --format json | jq -r '.private_key')
 
   echo "Uploading PGP key to CircleCI"
   curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"PGP_KEY\", \"value\":\"${private_key}\"}" "https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/envvar?circle-token=${api_token}"
 
-  echo "Generating circleci.oya"
+  # Generate circleci.oya
+
+  echo "Generating and encrypting circleci.oya"
   printf "vcsType: ${vcs_type}\nusername: ${username}\nproject: ${project}\ncircleciToken: ${api_token}\n" > "circleci.oya"
   oya secrets encrypt circleci.oya
 
   echo "Now put circleci.oya and .sops.yaml under git control and push to origin"
 
 initUsage: |
-  echo "Required arguments: <circleci-token> <vcs_url>"
-  echo "Example 1234567890aabbccddeeff https://github.com/tooploox/oya"
+  echo "Required argument: <vcs_url>"
+  echo
+  echo "To authorize access to CircleCI pass a Personal API token either using the --token=<circleci-token> flag or by setting CIRCLECI_TOKEN environment variable."
+  echo
+  echo "Example usage:"
+  echo
+  echo "   oya run circleci.init https://github.com/tooploox/oya --token=1234567890"
+  echo
+  echo "   CIRCLECI_TOKEN=1234567890 oya run circleci.init github.com/me/project1"
 
-
-
-
-# TODO for Oya
-#   Way to suppress verbose errors
-#   Way to replace variables `oya patch circleci.oya --set foo=bar,baz=qux
-
-# Ideas: https://discuss.circleci.com/t/how-do-i-download-output-logs/12563/6
-
-test: |
+latest: |
   set -e
-  aa=uu
-  if test "$aa" == ""; then
-      echo "exiting"
-      # exit 1
+
+  crnt_branch=$(git rev-parse --abbrev-ref HEAD)
+
+  latest=$(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}?circle-token=${Oya[circleciToken]}" | jq "sort_by(.start_time) | reverse | [.[] | select(.branch == \"${crnt_branch}\")][0]")
+
+  if [ "$latest" != "null" ]; then
+    echo "$latest"
+  else
+    echo ""
   fi
-  rm satuhsatueh
-  echo "after"
+
+open.Doc: >-
+  Open the latest CircleCI build for the current branch.
+open: |
+  set -e
+  latest=$(oya run latest)
+  if [ -n "$latest" ]; then
+    open $(echo $latest | jq -r '.build_url')
+  else
+    echo "No CircleCI build found for the current branch"
+  fi
+
+logs.Doc: >-
+  Show available CircleCI output logs for the latest build
+  for the current branch.
+logs: |
+  set -e
+  latest=$(oya run latest)
+  if [ -n "$latest" ]; then
+    build_num=$(echo $latest | jq -r '.build_num')
+    actions=$(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/${build_num}?circle-token=${Oya[circleciToken]}" | jq -r '.steps[] | select(.actions | select( .[])) | .actions[] | select(.has_output)' )
+    log_urls=$(echo "$actions" | jq -r ".output_url")
+    for log_url in $log_urls; do
+      curl -s "$log_url" | gzip -dc | jq -r '.[] | .message'
+    done
+  else
+    echo "No CircleCI build found for the current branch"
+  fi

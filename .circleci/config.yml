@@ -78,7 +78,7 @@ jobs:
           ~/.oya/bin/oya run -r -c Changeset ## Debugging
           echo "Running onMerge targets"
           ~/.oya/bin/oya run -r -c onMerge
-          ~/.oya/bin/oya run -r -c onMergeSuccess
+          ~/.oya/bin/oya run onMergeSuccess
 
 workflows:
   version: 2

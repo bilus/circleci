@@ -29,8 +29,8 @@ Changeset: |
     fi
     exit 0
   fi
-  echo '+/'
   echo "${changed_subdirs}" | awk '{a="+/"$1; print a}'
+  echo '+/'
 
 onPush: |
   echo "Pushed to branch"
@@ -41,4 +41,76 @@ onMerge: |
 
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
-  curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/gh/bilus/circleci/envvar?circle-token=70607f0e9196210054ac7462a94b39ba682623c6"
+  curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
+
+
+init: |
+  set -e
+
+  # Requires personal API token to be passed as the first argument.
+  api_token=$1
+  if [ -z "${api_token}" ]; then
+    oya run initUsage
+    exit 1
+  fi
+
+  # Requires a repo url as the second argument.
+  # Example: https://github.com/tooploox/oya or github.com/tooploox/oya
+  vcs_url=$2
+  if [ -z "${vcs_url}" ]; then
+    oya run initUsage
+    exit 1
+  fi
+
+  # Follow the repo.
+  if [[ $vcs_url =~ "github.com" ]]; then
+    vcs_type=gh
+  elif [[ $vcs_url =~ "bitbucket.org" ]]; then
+    vcs_type=bb
+  else
+    echo "CircleCI supports only Github and Bitbucket"
+    oya run initUsage
+    exit 2
+  fi
+
+  echo "Asking CircleCI to follow ${vcs_url}"
+  project=`basename "${vcs_url}"`
+  username=`basename "$(dirname \"${vcs_url}\")"`
+  curl -X POST https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/follow?circle-token=${api_token}
+
+  # Generate and upload a PGP key for encrypting Oya secrets.
+
+  echo "Generating PGP key and .sops.yml"
+  private_key=$(oya secrets init --type pgp --name "CircleCI" --format json | jq -r '.private_key')
+
+  echo "Uploading PGP key to CircleCI"
+  curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"PGP_KEY\", \"value\":\"${private_key}\"}" "https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/envvar?circle-token=${api_token}"
+
+  echo "Generating circleci.oya"
+  printf "vcsType: ${vcs_type}\nusername: ${username}\nproject: ${project}\ncircleciToken: ${api_token}\n" > "circleci.oya"
+  oya secrets encrypt circleci.oya
+
+  echo "Now put circleci.oya and .sops.yaml under git control and push to origin"
+
+initUsage: |
+  echo "Required arguments: <circleci-token> <vcs_url>"
+  echo "Example 1234567890aabbccddeeff https://github.com/tooploox/oya"
+
+
+
+
+# TODO for Oya
+#   Way to suppress verbose errors
+#   Way to replace variables `oya patch circleci.oya --set foo=bar,baz=qux
+
+# Ideas: https://discuss.circleci.com/t/how-do-i-download-output-logs/12563/6
+
+test: |
+  set -e
+  aa=uu
+  if test "$aa" == ""; then
+      echo "exiting"
+      # exit 1
+  fi
+  rm satuhsatueh
+  echo "after"

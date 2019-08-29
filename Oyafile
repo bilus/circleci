@@ -112,16 +112,8 @@ initUsage: |
 
 latest: |
   set -e
-
   crnt_branch=$(git rev-parse --abbrev-ref HEAD)
-
-  latest=$(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}?circle-token=${Oya[circleciToken]}" | jq "sort_by(.start_time) | reverse | [.[] | select(.branch == \"${crnt_branch}\")][0]")
-
-  if [ "$latest" != "null" ]; then
-    echo "$latest"
-  else
-    echo ""
-  fi
+  echo $(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}?circle-token=${Oya[circleciToken]}" | jq "sort_by(.start_time) | reverse | [.[] | select(.branch == \"${crnt_branch}\")][0] // empty")
 
 open.Doc: >-
   Open the latest CircleCI build for the current branch.

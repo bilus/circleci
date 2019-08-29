@@ -137,8 +137,28 @@ logs: |
     actions=$(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/${build_num}?circle-token=${Oya[circleciToken]}" | jq -r '.steps[] | select(.actions | select( .[])) | .actions[] | select(.has_output)' )
     log_urls=$(echo "$actions" | jq -r ".output_url")
     for log_url in $log_urls; do
-      curl -s "$log_url" | gzip -dc | jq -r '.[] | .message'
+      if [ "$log_url" != "null" ]; then
+        curl -s "$log_url" | gzip -dc | jq -r '.[] | .message'
+      fi
     done
+  else
+    echo "No CircleCI build found for the current branch"
+  fi
+
+
+show.Doc: >-
+  Show basic information about the latest CircleCI build
+  for the current branch.
+show: |
+  set -e
+  latest=$(oya run latest)
+  if [ -n "$latest" ]; then
+    title="Build $(echo $latest | jq -r '.build_num')"
+    echo "$title"
+    echo "$(echo $title | sed 's/./\=/g')"
+    echo "URL: $(echo $latest | jq -r '.build_url')"
+    echo "Started: $(echo $latest | jq -r '.start_time')"
+    echo "Status: $(echo $latest | jq -r '.status')"
   else
     echo "No CircleCI build found for the current branch"
   fi

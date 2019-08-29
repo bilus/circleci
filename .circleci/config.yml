@@ -74,12 +74,6 @@ jobs:
           set -e
           dpkg -i ~/.oya/sops_3.3.1_amd64.deb
           echo -e "$PGP_KEY" | gpg --import
-          printenv
-          gpg --fingerprint
-          cat .sops.yaml
-          cat circleci.oya
-          sops -d circleci.oya
-          ~/.oya/bin/oya secrets view circleci.oya
           echo "Modified directories:"
           ~/.oya/bin/oya run -r -c Changeset ## Debugging
           echo "Running onMerge targets"

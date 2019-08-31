@@ -47,6 +47,8 @@ onMergeSuccess: |
 init.Doc: >-
   Initialize CircleCI for the project.
 init: |
+  # TODO: If curl fails (e.g. not pushed to github), fail with an informative message
+
   set -e
 
   # Requires repo url as the argument.
@@ -99,7 +101,7 @@ init: |
 
   echo "Generating CircleCI config"
 
-  oya render ${Oya[BasePath]}/.circleci ./.circleci/
+  oya render ${Oya[BasePath]}/.circleci --output-dir ./.circleci/
 
   echo "Now put .circleci/, circleci.oya, and .sops.yaml under git control and push to origin"
 

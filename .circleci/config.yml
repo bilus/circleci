@@ -50,10 +50,7 @@ jobs:
           set -e
           dpkg -i ~/.oya/sops_3.3.1_amd64.deb
           echo -e "$PGP_KEY" | gpg --import
-          echo "Modified directories:"
-          ~/.oya/bin/oya run -r -c Changeset ## Debugging
           echo "Running onPush"
-          ~/.oya/bin/oya run Changeset
           echo "---"
           ~/.oya/bin/oya run -r -c onPush
 
@@ -74,11 +71,9 @@ jobs:
           set -e
           dpkg -i ~/.oya/sops_3.3.1_amd64.deb
           echo -e "$PGP_KEY" | gpg --import
-          echo "Modified directories:"
-          ~/.oya/bin/oya run -r -c Changeset ## Debugging
           echo "Running onMerge targets"
           ~/.oya/bin/oya run -r -c onMerge
-          ~/.oya/bin/oya run onMergeSuccess
+          ~/.oya/bin/oya run circleci.onMergeSuccess
 
 workflows:
   version: 2

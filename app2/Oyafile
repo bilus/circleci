@@ -1,7 +1,0 @@
-# -*- mode: yaml -*-
-
-onPush: |
-  echo "Pushed app2 to branch"
-
-onMerge: |
-  echo "Merged app2"

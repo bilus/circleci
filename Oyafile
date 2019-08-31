@@ -32,13 +32,6 @@ Changeset: |
   echo "${changed_subdirs}" | awk '{a="+/"$1; print a}'
   echo '+/'
 
-onPush: |
-  echo "Pushed to branch"
-
-onMerge: |
-  echo "Building master"
-
-
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
   curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"

@@ -86,7 +86,7 @@ init: |
   # Generate and upload a PGP key for encrypting Oya secrets.
 
   echo "Generating PGP key and .sops.yaml"
-  private_key=$(oya secrets init --type pgp --name "CircleCI" --format json | jq -r '.private_key')
+  private_key=$(oya secrets init --type pgp --name "CircleCI" --email "circleci@localhost" --format json | jq -r '.private_key')
 
   echo "Uploading PGP key to CircleCI"
   curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"PGP_KEY\", \"value\":\"${private_key}\"}" "https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/envvar?circle-token=${api_token}"
@@ -97,7 +97,13 @@ init: |
   printf "vcsType: ${vcs_type}\nusername: ${username}\nproject: ${project}\ncircleciToken: ${api_token}\n" > "circleci.oya"
   oya secrets encrypt circleci.oya
 
-  echo "Now put circleci.oya and .sops.yaml under git control and push to origin"
+  echo "Generating CircleCI config"
+
+  oya render ${Oya[BasePath]}/.circleci ./.circleci/
+
+  echo "Now put .circleci/, circleci.oya, and .sops.yaml under git control and push to origin"
+
+
 
 initUsage: |
   echo "Required argument: <vcs_url>"

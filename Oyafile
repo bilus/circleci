@@ -34,14 +34,12 @@ Changeset: |
 
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
-  curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
+  curl --fail -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
 
 
 init.Doc: >-
   Initialize CircleCI for the project.
 init: |
-  # TODO: If curl fails (e.g. not pushed to github), fail with an informative message
-
   set -e
 
   # Requires repo url as the argument.
@@ -76,7 +74,7 @@ init: |
 
   project=`basename "${vcs_url}"`
   username=`basename "$(dirname \"${vcs_url}\")"`
-  curl -X POST https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/follow?circle-token=${api_token}
+  curl --fail -X POST https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/follow?circle-token=${api_token}
 
   # Generate and upload a PGP key for encrypting Oya secrets.
 
@@ -114,7 +112,7 @@ initUsage: |
 latest: |
   set -e
   crnt_branch=$(git rev-parse --abbrev-ref HEAD)
-  echo $(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}?circle-token=${Oya[circleciToken]}" | jq "sort_by(.start_time) | reverse | [.[] | select(.branch == \"${crnt_branch}\")][0] // empty")
+  echo $(curl --fail -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}?circle-token=${Oya[circleciToken]}" | jq "sort_by(.start_time) | reverse | [.[] | select(.branch == \"${crnt_branch}\")][0] // empty")
 
 open.Doc: >-
   Open the latest CircleCI build for the current branch.
@@ -135,11 +133,11 @@ logs: |
   latest=$(oya run latest)
   if [ -n "$latest" ]; then
     build_num=$(echo $latest | jq -r '.build_num')
-    actions=$(curl -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/${build_num}?circle-token=${Oya[circleciToken]}" | jq -r '.steps[] | select(.actions | select( .[])) | .actions[] | select(.has_output)' )
+    actions=$(curl --fail -s "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/${build_num}?circle-token=${Oya[circleciToken]}" | jq -r '.steps[] | select(.actions | select( .[])) | .actions[] | select(.has_output)' )
     log_urls=$(echo "$actions" | jq -r ".output_url")
     for log_url in $log_urls; do
       if [ "$log_url" != "null" ]; then
-        curl -s "$log_url" | gzip -dc | jq -r '.[] | .message'
+        curl --fail -s "$log_url" | gzip -dc | jq -r '.[] | .message'
       fi
     done
   else

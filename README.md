@@ -56,6 +56,7 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
 4. Pass the current branch name as --branch to onMerge and onPush
 5. Implement onTagged requiring vX.Y.Z
 6. Add oya run -s --silent -- no error if target doesn't exist. Use to run targets.
+7. Make default branch configurable.
 
 ### TOC
 

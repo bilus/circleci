@@ -34,7 +34,8 @@ Changeset: |
 
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
-  curl --fail -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
+
+  curl --fail -o /dev/null -s -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
 
 
 init.Doc: >-
@@ -74,7 +75,7 @@ init: |
 
   project=`basename "${vcs_url}"`
   username=`basename "$(dirname \"${vcs_url}\")"`
-  curl --fail -X POST https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/follow?circle-token=${api_token}
+  curl --fail -o /dev/null -s -X POST https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/follow?circle-token=${api_token}
 
   # Generate and upload a PGP key for encrypting Oya secrets.
 
@@ -82,7 +83,7 @@ init: |
   private_key=$(oya secrets init --type pgp --name "CircleCI" --email "circleci@localhost" --format json | jq -r '.private_key')
 
   echo "Uploading PGP key to CircleCI"
-  curl -X POST --header "Content-Type: application/json" -d "{\"name\":\"PGP_KEY\", \"value\":\"${private_key}\"}" "https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/envvar?circle-token=${api_token}"
+  curl --fail -o /dev/null -s -X POST --header "Content-Type: application/json" -d "{\"name\":\"PGP_KEY\", \"value\":\"${private_key}\"}" "https://circleci.com/api/v1.1/project/${vcs_type}/${username}/${project}/envvar?circle-token=${api_token}"
 
   # Generate circleci.oya
 
@@ -94,7 +95,27 @@ init: |
 
   oya render ${Oya[BasePath]}/.circleci --output-dir ./.circleci/
 
-  echo "Now put .circleci/, circleci.oya, and .sops.yaml under git control and push to origin"
+  echo
+  echo "*******************************************************************************"
+  echo "* Success!"
+  echo "*******************************************************************************"
+  echo
+  echo Additional steps:
+  echo
+  echo "1) Add onMerge and onPush targets to Oyafile:"
+  echo
+  echo "onMerge: |"
+  echo "  echo \"Releasing after merging to master\""
+  echo
+  echo "onPush: |"
+  echo "  echo \"Testing after pushing to feature branch\""
+  echo
+  echo
+  echo "2) Put Oyafile, .circleci/, circleci.oya, and .sops.yaml under git control:"
+  echo
+  echo git add Oyafile .circleci circleci.oya .sops.yaml
+  echo git commit -m \"Integrate with CircleCI.\"
+
 
 
 
@@ -137,7 +158,7 @@ logs: |
     log_urls=$(echo "$actions" | jq -r ".output_url")
     for log_url in $log_urls; do
       if [ "$log_url" != "null" ]; then
-        curl --fail -s "$log_url" | gzip -dc | jq -r '.[] | .message'
+        curl --fail -o /dev/null -s "$log_url" | gzip -dc | jq -r '.[] | .message'
       fi
     done
   else

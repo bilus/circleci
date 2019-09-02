@@ -169,7 +169,7 @@ logs: |
     log_urls=$(echo "$actions" | jq -r ".output_url")
     for log_url in $log_urls; do
       if [ "$log_url" != "null" ]; then
-        curl --fail -o /dev/null -s "$log_url" | gzip -dc | jq -r '.[] | .message'
+        curl --fail -s "$log_url" | gzip -dc | jq -r '.[] | .message'
       fi
     done
   else

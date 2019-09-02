@@ -1,3 +1,5 @@
+version: 2.1
+
 defaults: &defaults
   working_directory: ~/oya-project
   docker:
@@ -6,7 +8,6 @@ defaults: &defaults
         OYA_VER: "oya version v0.0.15"  # TODO
 
 
-version: 2.1
 commands:
   oya_dependencies:
     description: "Install Oya depednencies"
@@ -28,30 +29,11 @@ commands:
           fi
 
 jobs:
-  oya_dependencies:
-    <<: *defaults
-    steps:
-      - oya_dependencies:
-      - save_cache:
-          key: oya-cache-v2-{{ arch }}-{{ .Branch }}
-          paths:
-            - ~/.oya
-      - checkout
-      # TODO: Make master configurable.
-      - save_cache:
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - ~/oya-project
-
   onPush:
     <<: *defaults
     steps:
-      - restore_cache: # Restores the workdir.
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      - restore_cache:
-          keys:
-            - oya-cache-v2-{{ arch }}-{{ .Branch }}
-            # - oya-cache-v2
+      - oya_dependencies
+      - checkout
       - run: |
           set -e
           dpkg -i ~/.oya/sops_3.3.1_amd64.deb
@@ -63,40 +45,24 @@ jobs:
   onMerge:
     <<: *defaults
     steps:
-      - restore_cache: # Restores the workdir.
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      - restore_cache:
-          keys:
-            - oya-cache-v2-{{ arch }}-{{ .Branch }}
-            - oya-cache-v2
-      # - checkout
-      # - setup_remote_docker
-      # - attach_workspace:
-      #     at: ~/oya-project
-      - run: |
-          set -e
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-          echo -e "$PGP_KEY" | gpg --import
-          echo "Running onMerge targets"
-          ~/.oya/bin/oya run -r -c onMerge
-          ~/.oya/bin/oya run circleci.onMergeSuccess
+      - oya_dependencies
+      - checkout
+      - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
+      - run: echo -e "$PGP_KEY" | gpg --import
+      - run: ~/.oya/bin/oya run -r -c onMerge
+      - run: ~/.oya/bin/oya run circleci.onMergeSuccess
 
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - oya_dependencies
       - onPush:
-          requires:
-            - oya_dependencies
           filters:
             branches:
               ignore:
                 - master
 
       - onMerge:
-          requires:
-            - oya_dependencies
           filters:
             branches:
               only:

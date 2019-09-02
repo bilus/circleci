@@ -36,7 +36,7 @@ Changeset: |
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
 
-  sha=git rev-parse HEAD
+  sha=$(git rev-parse HEAD)
   curl --fail -o /dev/null -s -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA\", \"value\":\"${sha}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
 
 

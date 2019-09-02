@@ -95,7 +95,7 @@ init: |
   # Generate circleci.oya
 
   echo "Generating and encrypting circleci.oya"
-  printf "vcsType: ${vcs_type}\nusername: ${username}\nproject: ${project}\ncircleciToken: ${api_token}\n" > "circleci.oya"
+  printf "circleci:\n  vcsType: ${vcs_type}\n  username: ${username}\n  project: ${project}\n  circleciToken: ${api_token}\n" > "circleci.oya"
   oya secrets encrypt circleci.oya
 
   echo "Generating CircleCI config"

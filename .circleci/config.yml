@@ -1,16 +1,16 @@
 defaults: &defaults
   working_directory: ~/oya-project
   docker:
-    - image: google/cloud-sdk
+    - image: google/cloud-sdk  # TODO
       environment:
-        OYA_VER: "oya version v0.0.15"
+        OYA_VER: "oya version v0.0.15"  # TODO
 
-version: 2
-jobs:
+
+version: 2.1
+commands:
   oya_dependencies:
-    <<: *defaults
+    description: "Install Oya depednencies"
     steps:
-      - run: echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
       - run: apt-get update && apt-get install -y wget curl
       - run: mkdir -p ~/.oya/bin
       - run: cd ~/.oya/ && wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
@@ -26,6 +26,12 @@ jobs:
             echo "Set PGP_KEY variable in the project's CircleCI configuration"
             exit 1
           fi
+
+jobs:
+  oya_dependencies:
+    <<: *defaults
+    steps:
+      - oya_dependencies:
       - save_cache:
           key: oya-cache-v2-{{ arch }}-{{ .Branch }}
           paths:

@@ -43,6 +43,13 @@ init.Doc: >-
 init: |
   set -e
 
+
+  if ! which gpg > /dev/null; then
+    echo "gpg is missing; visit https://gnupg.org"
+    exit 1
+  fi
+
+
   # Requires repo url as the argument.
 
   vcs_url=$1

@@ -42,12 +42,11 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
 ## TODO
 
 ### MUST-HAVES
-1. When init finishes, print about adding onMerge and onPush
-2. Refactor & clean up config.yml, provide a clean image.
-5. Move the pack to tooploox
-6. Write TOC
-7. Write quick start
-8. Write guide
+1. Refactor & clean up config.yml, provide a clean image.
+1. Move the pack to tooploox
+1. Write TOC
+1. Write quick start
+1. Write guide
 
 ### NICE-TO-HAVES
 1. Add CI/CD for the pack

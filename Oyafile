@@ -3,10 +3,12 @@
 Project: example
 
 Changeset: |
+  set -e
+
   crnt_branch=$(git rev-parse --abbrev-ref HEAD)
   if [[ "$crnt_branch" != "master" ]]; then
     # TODO: Make master configurable.
-    git branch -f master origin/master
+    git branch --quiet -f master origin/master
     compare_to=master
   else
     last_sha_var="OYA_LAST_SUCCESS_SHA"

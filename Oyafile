@@ -34,6 +34,8 @@ Changeset: |
 
 
 onMergeSuccess: |
+  set -e
+
   echo "Storing sha in CircleCI environment variables"
 
   sha=$(git rev-parse HEAD)

@@ -9,7 +9,7 @@ Changeset: |
     git branch -f master origin/master
     compare_to=master
   else
-    last_sha_var="OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}"
+    last_sha_var="OYA_LAST_SUCCESS_SHA"
     last_sha="${!last_sha_var}"
     if [ -z "${last_sha}" ]; then
       empty_tree=4b825dc642cb6eb9a060e54bf8d69288fbee4904
@@ -32,10 +32,12 @@ Changeset: |
   echo "${changed_subdirs}" | awk '{a="+/"$1; print a}'
   echo '+/'
 
+
 onMergeSuccess: |
   echo "Storing sha in CircleCI environment variables"
 
-  curl --fail -o /dev/null -s -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA_${CIRCLE_PROJECT_REPONAME}\", \"value\":\"${CIRCLE_SHA1}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
+  sha=git rev-parse HEAD
+  curl --fail -o /dev/null -s -X POST --header "Content-Type: application/json" -d "{\"name\":\"OYA_LAST_SUCCESS_SHA\", \"value\":\"${sha}\"}" "https://circleci.com/api/v1.1/project/${Oya[vcsType]}/${Oya[username]}/${Oya[project]}/envvar?circle-token=${Oya[circleciToken]}"
 
 
 init.Doc: >-

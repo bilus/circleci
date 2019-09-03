@@ -106,7 +106,7 @@ init: |
 
   echo "Generating CircleCI config"
 
-  oya render ${Oya[BasePath]}/.circleci --output-dir ./.circleci/
+  oya render ${Oya[BasePath]}/templates/.circleci --output-dir ./.circleci/
 
   echo
   echo "*******************************************************************************"

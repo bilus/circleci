@@ -44,18 +44,19 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
 ### MUST-HAVES
 1. Refactor & clean up config.yml, provide a clean image.
 1. Move the pack to tooploox
-1. Write TOC
 1. Write quick start
 1. Write guide
 
 ### NICE-TO-HAVES
 1. Add CI/CD for the pack
 2. Implement and use $Alias in circleci config.yml
+3. Way to run oya through an alias.
 3. Pass git -l --points-at HEAD as argument to onMerge and onPush (--tags). Document usage.
 4. Pass the current branch name as --branch to onMerge and onPush
-5. Implement onTagged requiring vX.Y.Z
-6. Add oya run -s --silent -- no error if target doesn't exist. Use to run targets.
+5. Implement onTag requiring vX.Y.Z
+6. Add oya run -s/--silent -- no error if target doesn't exist. Use to run targets.
 7. Make default branch configurable.
+
 
 ### TOC
 

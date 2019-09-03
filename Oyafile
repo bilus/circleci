@@ -115,7 +115,11 @@ init: |
   echo
   echo Additional steps:
   echo
-  echo "1) Add onMerge and onPush targets to Oyafile:"
+  echo "1) Add Changeset target:"
+  echo
+  echo "Changeset: oya run circleci.Changeset"
+  echo
+  echo "2) Add onMerge and onPush targets to Oyafile:"
   echo
   echo "onMerge: |"
   echo "  echo \"Releasing after merging to master\""
@@ -124,7 +128,7 @@ init: |
   echo "  echo \"Testing after pushing to feature branch\""
   echo
   echo
-  echo "2) Put Oyafile, .circleci/, circleci.oya, and .sops.yaml under git control:"
+  echo "3) Put Oyafile, .circleci/, circleci.oya, and .sops.yaml under git control:"
   echo
   echo git add Oyafile .circleci circleci.oya .sops.yaml
   echo git commit -m \"Integrate with CircleCI.\"

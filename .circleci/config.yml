@@ -5,7 +5,7 @@ defaults: &defaults
   docker:
     - image: registry.hub.docker.com/bilus/oya-circleci:v0.1.2
       environment:
-        OYA_VER: "oya version v0.0.15"  # TODO
+        OYA_VER: "oya version v0.0.16"
 
 
 commands:
@@ -38,8 +38,9 @@ jobs:
       - setup_remote_docker
       - run: |
           set -e
+          export PATH=~/.oya/bin/oya:$PATH
           cd docker
-          ~/.oya/bin/oya run -r -c onPush
+          oya run -r -c onPush
 
   onMerge:
     <<: *defaults
@@ -49,9 +50,13 @@ jobs:
       - setup_remote_docker
       - run: |
           set -e
+          export PATH=~/.oya/bin/:$PATH
           cd docker
-          ~/.oya/bin/oya run -r -c onMerge
-          ~/.oya/bin/oya run circleci.onMergeSuccess
+          echo "Changeset:"
+          oya run Changeset
+          echo "status: $?"
+          oya run -r -c onMerge
+          oya run circleci.onMergeSuccess
 
 workflows:
   version: 2

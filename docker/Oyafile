@@ -7,6 +7,10 @@ Import:
 Values:
   image: bilus/oya-circleci
 
+
+Changeset: oya run circleci.Changeset
+
+
 onMerge: |
   set -e
 
@@ -27,6 +31,7 @@ onMerge: |
     echo "ERROR: $image:$tag already pushed to Docker registry. Did you forget to bump VERSION?"
     exit 1
   fi
+
 
 onPush: |
   set -e

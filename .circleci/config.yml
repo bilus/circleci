@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/oya-project/
   docker:
-    - image: registry.hub.docker.com/bilus/oya-circleci:v0.1.1
+    - image: registry.hub.docker.com/bilus/oya-circleci:v0.1.2
       environment:
         OYA_VER: "oya version v0.0.15"  # TODO
 

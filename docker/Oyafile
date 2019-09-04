@@ -1,0 +1,17 @@
+Project: github.com/bilus/circleci/docker
+
+Import:
+  circleci: ..
+
+onMerge: |
+  set -e
+  tag="bilus/oya-circleci:$(cat VERSION)"
+  docker build . -t $tag
+  echo "${Oya[docker.password]}" | docker login --username ${Oya[docker.username]} --password-stdin
+  docker push $tag
+
+
+onPush: |
+  set -e
+  tag="bilus/oya-circleci:$(cat VERSION)"
+  docker build . -t $tag

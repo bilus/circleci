@@ -34,7 +34,6 @@ Changeset: |
   echo "${changed_subdirs}" | awk '{a="+/"$1; print a}'
   echo '+/'
 
-
 onMergeSuccess: |
   set -e
 
@@ -132,8 +131,6 @@ init: |
   echo
   echo git add Oyafile .circleci circleci.oya .sops.yaml
   echo git commit -m \"Integrate with CircleCI.\"
-
-
 
 
 initUsage: |

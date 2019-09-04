@@ -1,8 +1,9 @@
 version: 2.1
 
 defaults: &defaults
-  working_directory: ~/oya-project
+  working_directory: ~/oya-project/
   docker:
+    - image: google/cloud-sdk  # TODO
       environment:
         OYA_VER: "oya version v0.0.15"  # TODO
 
@@ -26,6 +27,7 @@ commands:
             echo "Set PGP_KEY variable in the project's CircleCI configuration"
             exit 1
           fi
+      - run: echo -e "$PGP_KEY" | gpg --import
 
 jobs:
   onPush:
@@ -33,12 +35,10 @@ jobs:
     steps:
       - oya_dependencies
       - checkout
+      - setup_remote_docker
       - run: |
           set -e
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-          echo -e "$PGP_KEY" | gpg --import
-          echo "Running onPush"
-          echo "---"
+          cd docker
           ~/.oya/bin/oya run -r -c onPush
 
   onMerge:
@@ -46,10 +46,12 @@ jobs:
     steps:
       - oya_dependencies
       - checkout
-      - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-      - run: echo -e "$PGP_KEY" | gpg --import
-      - run: ~/.oya/bin/oya run -r -c onMerge
-      - run: ~/.oya/bin/oya run circleci.onMergeSuccess
+      - setup_remote_docker
+      - run: |
+          set -e
+          cd docker
+          ~/.oya/bin/oya run -r -c onMerge
+          ~/.oya/bin/oya run circleci.onMergeSuccess
 
 workflows:
   version: 2

@@ -3,15 +3,33 @@ Project: github.com/bilus/circleci/docker
 Import:
   circleci: ..
 
+
+Values:
+  image: bilus/oya-circleci
+
 onMerge: |
   set -e
-  tag="bilus/oya-circleci:$(cat VERSION)"
-  docker build . -t $tag
-  echo "${Oya[docker.password]}" | docker login --username ${Oya[docker.username]} --password-stdin
-  docker push $tag
 
+  function docker_tag_exists() {
+    curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
+  }
+
+  image="${Oya[image]}"
+  tag="v$(cat VERSION)"
+
+  status=$(curl -lSL -s -o /dev/null -i -w "%{http_code}" https://index.docker.io/v1/repositories/$image/tags/$tag)
+
+  if [ "$status" == "404" ]; then
+    docker build . -t $image:$tag
+    echo "${Oya[docker.password]}" | docker login --username ${Oya[docker.username]} --password-stdin
+    docker push $image:$tag
+  else
+    echo "ERROR: $image:$tag already pushed to Docker registry. Did you forget to bump VERSION?"
+    exit 1
+  fi
 
 onPush: |
   set -e
-  tag="bilus/oya-circleci:$(cat VERSION)"
-  docker build . -t $tag
+  image="${Oya[image]}"
+  tag="v$(cat VERSION)"
+  docker build . -t $image:$tag

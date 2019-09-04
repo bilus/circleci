@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/oya-project/
   docker:
-    - image: google/cloud-sdk  # TODO
+    - image: bilus/oya-circleci:v0.1.0
       environment:
         OYA_VER: "oya version v0.0.15"  # TODO
 
@@ -12,15 +12,15 @@ commands:
   oya_dependencies:
     description: "Install Oya dependencies"
     steps:
-      - run: apt-get update && apt-get install -y wget curl
-      - run: mkdir -p ~/.oya/bin
-      - run: cd ~/.oya/ && wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
-      - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-      - run: curl https://oya.sh/get | bash
-      - run: mv /usr/local/bin/oya ~/.oya/bin
-      - run: |
-          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
+      # - run: apt-get update && apt-get install -y wget curl
+      # - run: mkdir -p ~/.oya/bin
+      # - run: cd ~/.oya/ && wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
+      # - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
+      # - run: curl https://oya.sh/get | bash
+      # - run: mv /usr/local/bin/oya ~/.oya/bin
+      # - run: |
+      #     echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
+      #     dpkg -i ~/.oya/sops_3.3.1_amd64.deb
       - run: |
           if [ -z "$PGP_KEY" ]
           then

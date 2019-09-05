@@ -10,14 +10,12 @@ Values:
 
 Changeset: |
   set -e  # TODO Failure in subtask doesn't fail circleci without it.
-  echo "Changeset task"
-  oya run circleci.Changeset
   # Paths are relative to the git repository root,
   # we need paths relative to the project root, i.e. /docker.
-  # global=$(oya run circleci.Changeset)
-  # if [[ "$global" =~ "\+/docker" ]]; then
-  #   echo "+/"
-  # fi
+  global=$(oya run circleci.Changeset)
+  if [[ "$global" =~ "\+/docker" ]]; then
+    echo "+/"
+  fi
 
 onMerge: |
   set -e

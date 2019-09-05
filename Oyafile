@@ -4,25 +4,21 @@ Project: example
 
 Changeset: |
   set -e
+
   crnt_branch=$(git rev-parse --abbrev-ref HEAD)
-  echo "crnt_branch: $crnt_branch"
   if [[ "$crnt_branch" != "master" ]]; then
-    echo "if"
     # TODO: Make master configurable.
     git branch --quiet -f master origin/master
     compare_to=master
   else
-    echo "else"
     last_sha_var="OYA_LAST_SUCCESS_SHA"
     last_sha="${!last_sha_var}"
-    echo "last_sha: $last_sha"
     if [ -z "${last_sha}" ]; then
       empty_tree=4b825dc642cb6eb9a060e54bf8d69288fbee4904
       compare_to=${empty_tree}
     else
       compare_to=${last_sha}
     fi
-    echo "compare_to: $compare_to"
   fi
   diff_tree=$(git diff-tree ${compare_to}..HEAD)
   # Directories only.

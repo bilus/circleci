@@ -42,10 +42,9 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
 ## TODO
 
 ### MUST-HAVES
-1. Refactor & clean up config.yml, provide a clean image.
-1. Move the pack to tooploox
 1. Write quick start
 1. Write guide
+1. Move the pack to tooploox
 
 ### NICE-TO-HAVES
 1. Add CI/CD for the pack
@@ -75,6 +74,7 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
   - Example
   - How it works
 - Custom image
+  https://circleci.com/docs/2.0/custom-images/
 - Custom CircleCI config
 - Custom tasks
 - Storing values

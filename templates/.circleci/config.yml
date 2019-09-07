@@ -3,53 +3,40 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/oya-project
   docker:
-      environment:
-        OYA_VER: "oya version v0.0.15"  # TODO
-
+    - image: registry.hub.docker.com/bilus/oya-circleci:v0.1.6
 
 commands:
-  oya_dependencies:
-    description: "Install Oya dependencies"
+  import_pgp_key:
+    description: "Import PGP key from PGP_KEY env variable"
     steps:
-      - run: apt-get update && apt-get install -y wget curl
-      - run: mkdir -p ~/.oya/bin
-      - run: cd ~/.oya/ && wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
-      - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-      - run: curl https://oya.sh/get | bash
-      - run: mv /usr/local/bin/oya ~/.oya/bin
-      - run: |
-          echo 'export PATH=~/.oya/bin/:$PATH' >> $BASH_ENV
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
       - run: |
           if [ -z "$PGP_KEY" ]
           then
             echo "Set PGP_KEY variable in the project's CircleCI configuration"
             exit 1
           fi
+      - run: echo -e "$PGP_KEY" | gpg --import
 
 jobs:
   onPush:
     <<: *defaults
     steps:
-      - oya_dependencies
+      - import_pgp_key
       - checkout
       - run: |
           set -e
-          dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-          echo -e "$PGP_KEY" | gpg --import
-          echo "Running onPush"
-          echo "---"
-          ~/.oya/bin/oya run -r -c onPush
-
+          export PATH=~/.oya/bin/oya:$PATH
+          oya run -r -c onPush
   onMerge:
     <<: *defaults
     steps:
-      - oya_dependencies
+      - import_pgp_key
       - checkout
-      - run: dpkg -i ~/.oya/sops_3.3.1_amd64.deb
-      - run: echo -e "$PGP_KEY" | gpg --import
-      - run: ~/.oya/bin/oya run -r -c onMerge
-      - run: ~/.oya/bin/oya run circleci.onMergeSuccess
+      - run: |
+          set -e
+          export PATH=~/.oya/bin/oya:$PATH
+          oya run -r -c onPush
+          oya run circleci.onMergeSuccess
 
 workflows:
   version: 2
@@ -60,7 +47,6 @@ workflows:
             branches:
               ignore:
                 - master
-
       - onMerge:
           filters:
             branches:

@@ -49,9 +49,6 @@ jobs:
           set -e
           export PATH=~/.oya/bin/:$PATH
           cd docker
-          echo "Changeset:"
-          oya run Changeset
-          echo "status: $?"
           oya run -r -c onMerge
           oya run circleci.onMergeSuccess
 

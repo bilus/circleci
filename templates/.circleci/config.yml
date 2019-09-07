@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/oya-project
   docker:
-    - image: registry.hub.docker.com/bilus/oya-circleci:v0.1.6
+    - image: registry.hub.docker.com/bilus/oya-circleci:v0.2.0
 
 commands:
   import_pgp_key:

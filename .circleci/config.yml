@@ -34,8 +34,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |
-          set -e
-          export PATH=~/.oya/bin/oya:$PATH
+          export PATH=~/.oya/bin/:$PATH
           cd docker
           oya run -r -c onPush
 
@@ -46,7 +45,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |
-          set -e
           export PATH=~/.oya/bin/:$PATH
           cd docker
           oya run -r -c onMerge

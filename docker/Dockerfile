@@ -13,5 +13,3 @@ RUN dpkg -i ~/.oya/sops_3.3.1_amd64.deb
 
 ENV OYA_VERSION=v0.0.17
 RUN curl https://oya.sh/get | bash -s $OYA_VERSION
-RUN mv /usr/local/bin/oya ~/.oya/bin
-ENV PATH="~/.oya/bin:${PATH}"

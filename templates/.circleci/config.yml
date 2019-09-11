@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/oya-project
   docker:
-    - image: registry.hub.docker.com/bilus/oya-circleci:v0.2.0
+    - image: registry.hub.docker.com/bilus/oya-circleci:v0.3.0
 
 commands:
   import_pgp_key:
@@ -24,7 +24,6 @@ jobs:
       - import_pgp_key
       - checkout
       - run: |
-          export PATH=~/.oya/bin/:$PATH
           oya run -r -c onPush
   onMerge:
     <<: *defaults
@@ -32,7 +31,6 @@ jobs:
       - import_pgp_key
       - checkout
       - run: |
-          export PATH=~/.oya/bin/:$PATH
           oya run -r -c onPush
           oya run circleci.onMergeSuccess
 

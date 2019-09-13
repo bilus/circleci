@@ -45,6 +45,7 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
 1. Write quick start
 1. Write guide
 1. Move the pack to tooploox
+1. Add a default install_dependencies command, initially empty so users creating custom image can just add oya there
 
 ### NICE-TO-HAVES
 1. Add CI/CD for the pack
@@ -75,6 +76,32 @@ Alternative: use the API https://circleci.com/docs/api/#summary-of-api-endpoints
   - How it works
 - Custom image
   https://circleci.com/docs/2.0/custom-images/
+
+commands:
+  install_oya:
+    description: "Import Oya and its dependencies"
+    steps:
+      - run:
+          wget https://github.com/mozilla/sops/releases/download/3.3.1/sops_3.3.1_amd64.deb
+          sudo dpkg -i sops_3.3.1_amd64.deb
+          rm sops_3.3.1_amd64.deb
+          OYA_VERSION=v0.0.17
+          curl https://oya.sh/get | bash -s $OYA_VERSION
+
+  onPush:
+    <<: *defaults
+    steps:
+      install_oya
+      ...
+  and
+
+  onMerge:
+    <<: *defaults
+    steps:
+      - install_oya
+      ...
+
+
 - Custom CircleCI config
 - Custom tasks
 - Storing values
